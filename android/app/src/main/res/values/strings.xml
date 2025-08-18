@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- FACEBOOK对应的App ID -->
+    <string name="facebook_app_id">1639399559928014</string>
+    <!-- FACEBOOK对应的Display Name -->
+    <string name="facebook_app_name">台灣猜歌金曲</string>
+      <string name="title_dynamicfeature">Module Title</string>
+    <!-- FACEBOOK对应的于客户端交互配置 -->
+
+</resources>
