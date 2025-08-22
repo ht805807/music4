@@ -71,7 +71,7 @@ class _TopWidget extends State<TopWidget> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const GooglePayDialog()),
+                      builder: (context) => const GooglePayPage()),
                 );
               },
               child: Row(
