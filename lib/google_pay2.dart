@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:music4/word_select.dart';
-
 import 'home_page.dart';
 import 'music_data/data.dart';
 import 'music_data/shared_preferences_helper.dart';
 
-class GooglePayDialog2 extends StatefulWidget {
+class ApplePay extends StatefulWidget {
+  const ApplePay({super.key});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<GooglePayDialog2> {
+class _MyHomePageState extends State<ApplePay> {
   final InAppPurchase _inAppPurchase = InAppPurchase.instance;
   List<ProductDetails> _products = [];
   bool _isAvailable = false;
   bool _purchasePending = false;
-  String _queryProductError = '';
+
 
   @override
   void initState() {

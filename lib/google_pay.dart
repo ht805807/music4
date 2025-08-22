@@ -1,136 +1,199 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'home_page.dart';
 
-class GooglePayDialog extends StatelessWidget {
+class GooglePayPage extends StatefulWidget {
+  const GooglePayPage({super.key});
 
+  @override
+  State<GooglePayPage> createState() => _GooglePayPageState();
+}
 
-  const GooglePayDialog({super.key});
+class _GooglePayPageState extends State<GooglePayPage> {
+  final InAppPurchase _iap = InAppPurchase.instance;
+  late StreamSubscription<List<PurchaseDetails>> _subscription;
+
+  final List<String> _productIds = <String>[
+    'pc01',
+    'pc02',
+    'pc03',
+    'pc04',
+  ];
+
+  List<ProductDetails> _products = [];
+  bool _purchasePending = false;
+  bool _isAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _subscription = _iap.purchaseStream.listen(
+      _listenToPurchaseUpdated,
+      onDone: () => _subscription.cancel(),
+      onError: (error) => debugPrint("❌ 購買 stream 錯誤: $error"),
+    );
+
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    final available = await _iap.isAvailable();
+    setState(() {
+      _isAvailable = available;
+    });
+
+    if (!available) {
+      debugPrint("⚠️ IAP 不可用");
+      return;
+    }
+
+    final response = await _iap.queryProductDetails(_productIds.toSet());
+    if (response.error != null) {
+      debugPrint("❌ 讀取產品錯誤: ${response.error}");
+      return;
+    }
+
+    setState(() {
+      _products = response.productDetails;
+    });
+  }
+
+  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
+    for (final purchase in purchaseDetailsList) {
+      setState(() {
+        _purchasePending = false;
+      });
+      if (Navigator.canPop(context)) Navigator.pop(context);
+
+      switch (purchase.status) {
+        case PurchaseStatus.pending:
+          setState(() => _purchasePending = true);
+          break;
+        case PurchaseStatus.purchased:
+          debugPrint("🎉 購買成功: ${purchase.productID}");
+          _iap.completePurchase(purchase);
+          break;
+        case PurchaseStatus.error:
+          debugPrint("❌ 購買失敗: ${purchase.error}");
+          break;
+        case PurchaseStatus.canceled:
+          debugPrint("🛑 使用者取消: ${purchase.productID}");
+          break;
+        case PurchaseStatus.restored:
+          debugPrint("♻️ 恢復購買: ${purchase.productID}");
+          break;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    MethodChannel? _methodChannel;
-    _methodChannel = const MethodChannel("test");
-    _methodChannel.setMethodCallHandler((handler) => Future<String>(() {
-      switch (handler.method) {
-        case "TOTAL_COINS_300":
-          Navigator.pop(context,'TOTAL_COINS_300');
-          break;
-        case "TOTAL_COINS_1200":
-          Navigator.pop(context,'TOTAL_COINS_1200');
-          break;
-        case "TOTAL_COINS_7000":
-          Navigator.pop(context,'TOTAL_COINS_7000');
-          break;
-        case "TOTAL_COINS_20000":
-          Navigator.pop(context,'TOTAL_COINS_20000');
-          break;
-      }
-      return "";
-    }));
-
-    return Dialog(
-      elevation: 0,
-      backgroundColor: Colors.transparent,
-      child: MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Container(
-              height: 200,
-              width: 100,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/image/buytip_bg.png'), // 替换为实际图片路径
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const Text(
-                    '付費系統',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                    ),
-                  ),
-                  const SizedBox(height: 60),
-                  buildPurchaseRow('30元購買300個金幣'),
-                  const SizedBox(height: 60),
-                  buildPurchaseRow('100元購買1200個金幣'),
-                  const SizedBox(height: 60),
-                  buildPurchaseRow('500元購買7000個金幣'),
-                  const SizedBox(height: 60),
-                  buildPurchaseRow('1000元購買20000個金幣'),
-                  const SizedBox(height: 60),
-                  buildPurchaseRow('30元購買過關金幣五倍卷(永久)'),
-                  const SizedBox(height: 60),
-                  const Text(
-                    '購買後請勿將APP刪除，否則金幣數據將被刪除',
-                    style: TextStyle(
-                      color: Colors.deepOrange,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  buildImageButton(context),
-                ],
-              ),
-            ),
+    if (!_isAvailable) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            '付費系統',
+            style: TextStyle(color: Colors.black, fontSize: 20),
           ),
         ),
-      ),
+        body: const Center(child: Text('Store is not available')),
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('付費系統'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+                    (route) => false,
+              );
+            },
+          ),
+        ),
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/image/index_background.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            ListView(
+              children: _products.map((ProductDetails productDetails) {
+                return Container(
+                  margin: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    image: const DecorationImage(
+                      image: AssetImage('assets/image/allpass_back0.png'),
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  child: ListTile(
+                    title: Text(
+                      productDetails.title,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      productDetails.description,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing: Container(
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage('assets/image/game_coin_sel.png'),
+                          fit: BoxFit.cover,
+                        ),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                        ),
+                        child: Text(
+                          productDetails.price,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () async {
+                          setState(() => _purchasePending = true);
+                          _showLoadingDialog();
+                          final purchaseParam =
+                          PurchaseParam(productDetails: productDetails);
+                          await _iap.buyConsumable(
+                            purchaseParam: purchaseParam,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            if (_purchasePending)
+              const Center(child: CircularProgressIndicator()),
+          ],
+        ),
+      );
+    }
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
   }
-}
-
-Widget buildPurchaseRow(String message) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Text(
-        message,
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 15,
-        ),
-      ),
-      InkWell(
-        onTap: () async {
-          const platform = MethodChannel('test');
-          await platform.invokeMethod('GooglePlay');
-        },
-        child: Container(
-          width: 80,
-          height: 26,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/image/images.jpg'), // 替换为实际图片路径
-              fit: BoxFit.cover,
-            ),
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-Widget buildImageButton(context) {
-  return Container(
-    child: InkWell(
-      onTap: () {
-        Navigator.pop(context);
-      },
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/image/pp.png'), // 替换为实际图片路径
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    ),
-  );
 }

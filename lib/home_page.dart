@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music4/word_select.dart';
-import 'api/main_api_service.dart';
 import 'main.dart';
-import 'music_data/data.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -34,12 +32,12 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              const Center(
+              Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     WordSelect(),
-                    Expanded(
+                    const Expanded(
                       child: SizedBox(
                         width: double.infinity,
                         child: Column(

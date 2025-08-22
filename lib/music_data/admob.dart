@@ -5,7 +5,7 @@ class ADMob {
   static late final InterstitialAd? _interstitialAd;
   static final adUnitId = Platform.isAndroid
       ? 'ca-app-pub-7319177608866963/3181089695'
-      : 'ca-app-pub-7319177608866963/3181089695';
+      : 'ca-app-pub-7319177608866963/6345221343';
 
   static void initAd() {
     InterstitialAd.load(
