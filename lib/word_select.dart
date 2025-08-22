@@ -232,72 +232,74 @@ class MyGridView extends State<WordSelect>
 
         /// 🔹 上方答案格
         SizedBox(
-          width: screenWidth * 0.8,
+          width: screenWidth * 0.9,
           height: screenHeight * 0.18,
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 6,
-              crossAxisSpacing: 1.0,
-              mainAxisSpacing: 1.0,
-            ),
-            itemCount: Data.initCurrentSong().getSongName().length,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    // 清空答案區
-                    Data.isVisible = false;
-                    Data.isVisibleList = List.generate(30, (index) => true);
-                    for (int a = 0; a < Data.mSelWords.length; a++) {
-                      Data.mSelWords[a] = '';
-                    }
-                  });
-                },
-                child: Container(
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage("assets/image/game_wordblank.png"),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: AnimatedBuilder(
-                    animation: controller,
-                    builder: (context, child) {
-                      final word = Data.mSelWords[index];
-
-                      // 🔸 空格 → 顯示空白
-                      if (word.isEmpty) return const SizedBox();
-
-                      // 🔸 判斷顏色
-                      Color textColor;
-                      if (Data.isVisible) {
-                        // 錯誤 → 紅色閃爍
-                        textColor = ColorTween(
-                          begin: Colors.white,
-                          end: Colors.red,
-                        ).animate(controller).value!;
-                      } else {
-                        // 正常 → 白字
-                        textColor = Colors.white;
-                      }
-
-                      return Text(
-                        word,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: screenWidth * 0.05,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
+          child: Center(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: screenWidth * 0.01,
+              runSpacing: screenHeight * 0.01,
+              children: List.generate(
+                Data.initCurrentSong().getSongName().length,
+                    (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        // 清空答案區
+                        Data.isVisible = false;
+                        Data.isVisibleList = List.generate(30, (index) => true);
+                        for (int a = 0; a < Data.mSelWords.length; a++) {
+                          Data.mSelWords[a] = '';
+                        }
+                      });
                     },
-                  ),
-                ),
-              );
-            },
+                    child: Container(
+                      width: screenWidth * 0.12,
+                      height: screenWidth * 0.12,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage("assets/image/game_wordblank.png"),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: AnimatedBuilder(
+                        animation: controller,
+                        builder: (context, child) {
+                          final word = Data.mSelWords[index];
+
+                          // 🔸 空格 → 顯示空白
+                          if (word.isEmpty) return const SizedBox();
+
+                          // 🔸 判斷顏色
+                          Color textColor;
+                          if (Data.isVisible) {
+                            // 錯誤 → 紅色閃爍
+                            textColor = ColorTween(
+                              begin: Colors.white,
+                              end: Colors.red,
+                            ).animate(controller).value!;
+                          } else {
+                            // 正常 → 白字
+                            textColor = Colors.white;
+                          }
+
+                          return Text(
+                            word,
+                            style: TextStyle(
+                              color: textColor,
+                              fontSize: screenWidth * 0.05,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
-
-
         /// 🔹 廣告 Banner
         if (_isLoaded && _bannerAd != null)
           SizedBox(

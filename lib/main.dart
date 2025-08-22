@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api/main_api_service.dart';
 import 'home_page.dart';
+import 'music_data/admob.dart';
 import 'music_data/data.dart';
 import 'music_data/my_player.dart';
 import 'music_data/shared_preferences_helper.dart';
@@ -12,7 +13,7 @@ import 'music_data/shared_preferences_helper.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
  // MobileAds.instance.initialize();
- // ADMob.initAd();
+  ADMob.initAd();
   await MainApiService().iOS().then((value) {
     if (value.isNotEmpty) {
       if (value.containsKey('data')) {
