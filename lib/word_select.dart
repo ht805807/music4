@@ -6,6 +6,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:music4/pass_event_layout.dart';
 import 'aii_pass_view.dart';
 import 'disc.dart';
+import 'google_pay.dart';
 import 'google_pay2.dart';
 import 'music_data/admob.dart';
 import 'music_data/data.dart';
@@ -115,7 +116,7 @@ class MyGridView extends State<WordSelect>
                   onTap: () {
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (context) => ApplePay()),
+                      MaterialPageRoute(builder: (context) => GooglePayPage()),
                           (route) => false,
                     );
                   },
@@ -218,7 +219,7 @@ class MyGridView extends State<WordSelect>
             Center(
               child: GestureDetector(
                 onTap: () async {
-                  const platform = MethodChannel('test');
+                  const platform = MethodChannel('com.janther0927M5/pay');
                   await platform.invokeMethod('FaceBookAlertDialog');
                 },
                 child: Container(
@@ -600,7 +601,7 @@ void showConfirmDialog(int id) {
                     Navigator.pop(context); // 關閉對話框
                     Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (context) => ApplePay()),
+                        MaterialPageRoute(builder: (context) => GooglePayPage()),
                             (route) => route == null);
                   },
                   child: const Text('確認'),
