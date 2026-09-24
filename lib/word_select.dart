@@ -10,7 +10,7 @@ import 'google_pay.dart';
 import 'google_pay2.dart';
 import 'music_data/admob.dart';
 import 'music_data/data.dart';
-import 'music_data/main_api_service.dart';
+import 'services/score_submitter.dart';
 import 'music_data/music.dart';
 import 'music_data/my_player.dart';
 import 'music_data/shared_preferences_helper.dart';
@@ -22,8 +22,7 @@ class WordSelect extends StatefulWidget {
   MyGridView createState() => MyGridView();
 }
 
-class MyGridView extends State<WordSelect>
-    with SingleTickerProviderStateMixin {
+class MyGridView extends State<WordSelect> with SingleTickerProviderStateMixin {
   late AnimationController controller;
   final adUnitId = Platform.isAndroid
       ? 'ca-app-pub-7319177608866963/6040037387'
@@ -32,6 +31,14 @@ class MyGridView extends State<WordSelect>
   BannerAd? _bannerAd;
 
   MethodChannel? _methodChannel;
+  bool _completionHandled = false;
+
+  void _submitScoreOnce() {
+    if (_completionHandled) return;
+    _completionHandled = true;
+    ScoreSubmitter.instance
+        .submitCompletedLevel(context, Data.mCurrentIndex + 1);
+  }
 
   @override
   void initState() {
@@ -69,271 +76,276 @@ class MyGridView extends State<WordSelect>
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        /// 🔹 上方 bar
-        SafeArea(
-          child: Container(
-            height: screenHeight * 0.06,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/image/index_bar.png'),
-                fit: BoxFit.cover,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          /// 🔹 上方 bar
+          SafeArea(
+            child: Container(
+              height: screenHeight * 0.06,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/image/index_bar.png'),
+                  fit: BoxFit.cover,
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: screenWidth * 0.28,
-                  height: screenHeight * 0.04,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/image/all_back.png'),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: screenWidth * 0.12,
-                  height: screenWidth * 0.12,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/image/game_level_title.png'),
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    (Data.mCurrentIndex + 1).toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: screenWidth * 0.05,
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => GooglePayPage()),
-                          (route) => false,
-                    );
-                  },
-                  child: Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
                     width: screenWidth * 0.28,
-                    height: screenHeight * 0.05,
+                    height: screenHeight * 0.04,
                     decoration: const BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/image/game_coin.png'),
+                        image: AssetImage('assets/image/all_back.png'),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: screenWidth * 0.12,
+                    height: screenWidth * 0.12,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/image/game_level_title.png'),
+                      ),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      (Data.mCurrentIndex + 1).toString(),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: screenWidth * 0.05,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => GooglePayPage()),
+                        (route) => false,
+                      );
+                    },
+                    child: Container(
+                      width: screenWidth * 0.28,
+                      height: screenHeight * 0.05,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/image/game_coin.png'),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/image/game_coin_icon.png',
+                            width: screenWidth * 0.05,
+                          ),
+                          SizedBox(width: screenWidth * 0.02),
+                          Text(
+                            Data.TOTAL_COINS.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.045,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          /// 🔹 中間標題
+          SizedBox(
+            width: screenWidth * 0.4,
+            height: screenHeight * 0.05,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Image.asset('assets/image/game_title.png'),
+                const Text(
+                  '歌曲',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+
+          /// 🔹 三個按鈕區
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Center(
+                child: GestureDetector(
+                  onTap: () => showConfirmDialog(2),
+                  child: Container(
+                    width: screenWidth * 0.18,
+                    height: screenHeight * 0.1,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/image/game_buy1.png'),
                       ),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Image.asset(
-                          'assets/image/game_coin_icon.png',
-                          width: screenWidth * 0.05,
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: screenHeight * 0.06,
+                              left: screenWidth * 0.04),
+                          child: Image.asset(
+                            'assets/image/game_coin_icon.png',
+                            width: screenWidth * 0.04,
+                            height: screenWidth * 0.04,
+                          ),
                         ),
-                        SizedBox(width: screenWidth * 0.02),
-                        Text(
-                          Data.TOTAL_COINS.toString(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: screenWidth * 0.045,
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: screenHeight * 0.06,
+                              right: screenWidth * 0.05),
+                          child: Text(
+                            '20',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: screenWidth * 0.035,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-
-        /// 🔹 中間標題
-        SizedBox(
-          width: screenWidth * 0.4,
-          height: screenHeight * 0.05,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Image.asset('assets/image/game_title.png'),
-              const Text(
-                '歌曲',
-                style: TextStyle(color: Colors.white),
+              ),
+              const DiscWidget(),
+              Center(
+                child: GestureDetector(
+                  onTap: () async {
+                    const platform = MethodChannel('com.janther0927M5/pay');
+                    await platform.invokeMethod('FaceBookAlertDialog');
+                  },
+                  child: Container(
+                    width: screenWidth * 0.18,
+                    height: screenWidth * 0.18,
+                  ),
+                ),
               ),
             ],
           ),
-        ),
 
-        /// 🔹 三個按鈕區
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Center(
-              child: GestureDetector(
-                onTap: () => showConfirmDialog(2),
-                child: Container(
-                  width: screenWidth * 0.18,
-                  height: screenHeight * 0.1,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/image/game_buy1.png'),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                            top: screenHeight * 0.06,
-                            left: screenWidth * 0.04),
-                        child: Image.asset(
-                          'assets/image/game_coin_icon.png',
-                          width: screenWidth * 0.04,
-                          height: screenWidth * 0.04,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                            top: screenHeight * 0.06,
-                            right: screenWidth * 0.05),
-                        child: Text(
-                          '20',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: screenWidth * 0.035,
-                            fontWeight: FontWeight.bold,
+          /// 🔹 上方答案格
+          SizedBox(
+            width: screenWidth * 0.9,
+            height: screenHeight * 0.18,
+            child: Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: screenWidth * 0.01,
+                runSpacing: screenHeight * 0.01,
+                children: List.generate(
+                  Data.initCurrentSong().getSongName().length,
+                  (index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          // 清空答案區
+                          Data.isVisible = false;
+                          Data.isVisibleList =
+                              List.generate(30, (index) => true);
+                          for (int a = 0; a < Data.mSelWords.length; a++) {
+                            Data.mSelWords[a] = '';
+                          }
+                        });
+                      },
+                      child: Container(
+                        width: screenWidth * 0.12,
+                        height: screenWidth * 0.12,
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image:
+                                AssetImage("assets/image/game_wordblank.png"),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const DiscWidget(),
-            Center(
-              child: GestureDetector(
-                onTap: () async {
-                  const platform = MethodChannel('com.janther0927M5/pay');
-                  await platform.invokeMethod('FaceBookAlertDialog');
-                },
-                child: Container(
-                  width: screenWidth * 0.18,
-                  height: screenWidth * 0.18,
-                ),
-              ),
-            ),
-          ],
-        ),
+                        alignment: Alignment.center,
+                        child: AnimatedBuilder(
+                          animation: controller,
+                          builder: (context, child) {
+                            final word = Data.mSelWords[index];
 
-        /// 🔹 上方答案格
-        SizedBox(
-          width: screenWidth * 0.9,
-          height: screenHeight * 0.18,
-          child: Center(
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: screenWidth * 0.01,
-              runSpacing: screenHeight * 0.01,
-              children: List.generate(
-                Data.initCurrentSong().getSongName().length,
-                    (index) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        // 清空答案區
-                        Data.isVisible = false;
-                        Data.isVisibleList = List.generate(30, (index) => true);
-                        for (int a = 0; a < Data.mSelWords.length; a++) {
-                          Data.mSelWords[a] = '';
-                        }
-                      });
-                    },
-                    child: Container(
-                      width: screenWidth * 0.12,
-                      height: screenWidth * 0.12,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage("assets/image/game_wordblank.png"),
+                            // 🔸 空格 → 顯示空白
+                            if (word.isEmpty) return const SizedBox();
+
+                            // 🔸 判斷顏色
+                            Color textColor;
+                            if (Data.isVisible) {
+                              // 錯誤 → 紅色閃爍
+                              textColor = ColorTween(
+                                begin: Colors.white,
+                                end: Colors.red,
+                              ).animate(controller).value!;
+                            } else {
+                              // 正常 → 白字
+                              textColor = Colors.white;
+                            }
+
+                            return Text(
+                              word,
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: screenWidth * 0.05,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      alignment: Alignment.center,
-                      child: AnimatedBuilder(
-                        animation: controller,
-                        builder: (context, child) {
-                          final word = Data.mSelWords[index];
-
-                          // 🔸 空格 → 顯示空白
-                          if (word.isEmpty) return const SizedBox();
-
-                          // 🔸 判斷顏色
-                          Color textColor;
-                          if (Data.isVisible) {
-                            // 錯誤 → 紅色閃爍
-                            textColor = ColorTween(
-                              begin: Colors.white,
-                              end: Colors.red,
-                            ).animate(controller).value!;
-                          } else {
-                            // 正常 → 白字
-                            textColor = Colors.white;
-                          }
-
-                          return Text(
-                            word,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: screenWidth * 0.05,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),
-        ),
-        /// 🔹 廣告 Banner
-        if (_isLoaded && _bannerAd != null)
-          SizedBox(
-            width: _bannerAd!.size.width.toDouble(),
-            height: _bannerAd!.size.height.toDouble(),
-            child: AdWidget(ad: _bannerAd!),
-          ),
 
-        /// 🔹 底部答案線
-        Padding(
-          padding: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
-          child: Image.asset(
-            "assets/image/game_line.png",
-            width: screenWidth * 0.8,
-            fit: BoxFit.contain,
-          ),
-        ),
-
-        /// 🔹 候選字 Grid
-        SizedBox(
-          width: screenWidth * 0.8,
-          height: screenHeight * 0.4,
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 6,
-              crossAxisSpacing: 2.0,
-              mainAxisSpacing: 2.0,
+          /// 🔹 廣告 Banner
+          if (_isLoaded && _bannerAd != null)
+            SizedBox(
+              width: _bannerAd!.size.width.toDouble(),
+              height: _bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: _bannerAd!),
             ),
-            itemCount: 30,
-            itemBuilder: (context, index) {
-              return Visibility(
-                visible: Data.isVisibleList[index],
-                child: GestureDetector(
+
+          /// 🔹 底部答案線
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: screenHeight * 0.01),
+            child: Image.asset(
+              "assets/image/game_line.png",
+              width: screenWidth * 0.8,
+              fit: BoxFit.contain,
+            ),
+          ),
+
+          /// 🔹 候選字 Grid
+          SizedBox(
+            width: screenWidth * 0.8,
+            height: screenHeight * 0.4,
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 6,
+                crossAxisSpacing: 2.0,
+                mainAxisSpacing: 2.0,
+              ),
+              itemCount: 30,
+              itemBuilder: (context, index) {
+                return Visibility(
+                  visible: Data.isVisibleList[index],
+                  child: GestureDetector(
                     onTap: () {
                       MyPlayerMy.playSong(MyPlayerMy.enterTone);
                       setState(() {
@@ -350,24 +362,29 @@ class MyGridView extends State<WordSelect>
                               }
 
                               // ✅ 答案正確
-                              if (selectWords == Data.initCurrentSong().getSongName()) {
+                              if (selectWords ==
+                                  Data.initCurrentSong().getSongName()) {
                                 setState(() {
                                   Data.isVisible = false; // 停止錯誤狀態，維持白字
                                 });
 
                                 if (Data.ios == "0") {
-                                  if (Data.mCurrentIndex + 1 >= Music.songInfoios.length) {
+                                  if (Data.mCurrentIndex + 1 >=
+                                      Music.songInfoios.length) {
+                                    _submitScoreOnce();
                                     MyPlayerMy.playStop();
                                     SharedPreferencesHelper.SetGame();
                                     ADMob.interstitialAd();
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const AllPassView()),
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const AllPassView()),
                                     );
                                   } else {
                                     MyPlayerMy.playSong(MyPlayerMy.coinTone);
                                     ADMob.interstitialAd();
-                                    MainApiService.UpDaya();
+                                    _submitScoreOnce();
                                     showDialog(
                                       context: context,
                                       barrierDismissible: false,
@@ -378,16 +395,20 @@ class MyGridView extends State<WordSelect>
                                     );
                                   }
                                 } else {
-                                  if (Data.mCurrentIndex + 1 >= Music.songInfo.length) {
+                                  if (Data.mCurrentIndex + 1 >=
+                                      Music.songInfo.length) {
+                                    _submitScoreOnce();
                                     MyPlayerMy.playStop();
                                     SharedPreferencesHelper.SetGame();
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const AllPassView()),
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              const AllPassView()),
                                     );
                                   } else {
                                     MyPlayerMy.playSong(MyPlayerMy.coinTone);
-                                    MainApiService.UpDaya();
+                                    _submitScoreOnce();
                                     showDialog(
                                       context: context,
                                       barrierDismissible: false,
@@ -398,7 +419,6 @@ class MyGridView extends State<WordSelect>
                                     );
                                   }
                                 }
-
                               }
                               // ❌ 答案錯誤 → 啟動閃爍
                               else {
@@ -418,25 +438,25 @@ class MyGridView extends State<WordSelect>
                         }
                       });
                     },
-
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/image/game_word0.png"),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage("assets/image/game_word0.png"),
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        Data.words[index],
+                        style: TextStyle(fontSize: screenWidth * 0.045),
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      Data.words[index],
-                      style: TextStyle(fontSize: screenWidth * 0.045),
-                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -448,8 +468,7 @@ class MyGridView extends State<WordSelect>
     super.dispose();
   }
 
-
-void showConfirmDialog(int id) {
+  void showConfirmDialog(int id) {
     switch (id) {
       case 1:
         showDialog(
@@ -507,7 +526,7 @@ void showConfirmDialog(int id) {
                             print("SelectWords2 = " + SelectWords);
                             print("getSongName2 = " +
                                 Data.initCurrentSong().getSongName());
-                            if(Data.ios=="0"){
+                            if (Data.ios == "0") {
                               if (SelectWords ==
                                   Data.initCurrentSong().getSongName()) {
                                 if (Data.mCurrentIndex + 1 >=
@@ -516,7 +535,7 @@ void showConfirmDialog(int id) {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                        const AllPassView()),
+                                            const AllPassView()),
                                   );
                                 } else {
                                   SharedPreferencesHelper.SetGame();
@@ -535,7 +554,7 @@ void showConfirmDialog(int id) {
                                     reverse: true,
                                     period: const Duration(milliseconds: 300));
                               }
-                            }else{
+                            } else {
                               if (SelectWords ==
                                   Data.initCurrentSong().getSongName()) {
                                 if (Data.mCurrentIndex + 1 >=
@@ -544,7 +563,7 @@ void showConfirmDialog(int id) {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                        const AllPassView()),
+                                            const AllPassView()),
                                   );
                                 } else {
                                   SharedPreferencesHelper.SetGame();
@@ -564,9 +583,6 @@ void showConfirmDialog(int id) {
                                     period: const Duration(milliseconds: 300));
                               }
                             }
-
-
-
                           } else {
                             break;
                           }
@@ -601,8 +617,9 @@ void showConfirmDialog(int id) {
                     Navigator.pop(context); // 關閉對話框
                     Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (context) => GooglePayPage()),
-                            (route) => route == null);
+                        MaterialPageRoute(
+                            builder: (context) => GooglePayPage()),
+                        (route) => route == null);
                   },
                   child: const Text('確認'),
                 ),

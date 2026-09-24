@@ -15,7 +15,7 @@ class ADMob {
           // Called when an ad is successfully received.
           onAdLoaded: (InterstitialAd ad) {
             ad.fullScreenContentCallback = FullScreenContentCallback(
-              // Called when the ad showed the full screen content.
+                // Called when the ad showed the full screen content.
                 onAdShowedFullScreenContent: (ad) {},
                 // Called when an impression occurs on the ad.
                 onAdImpression: (ad) {},
@@ -40,12 +40,9 @@ class ADMob {
             print('InterstitialAd failed to load: $error');
           },
         ));
-
   }
 
-  static void interstitialAd(){
+  static void interstitialAd() {
     _interstitialAd?.show();
   }
-
-
 }

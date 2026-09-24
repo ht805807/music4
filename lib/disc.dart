@@ -31,10 +31,11 @@ class _DiscWidget extends State<DiscWidget> with TickerProviderStateMixin {
       if (status == AnimationStatus.completed) {
         // 当动画完成并且未反转时，延迟10秒后反转动画
         _controller2.forward();
-        if(Data.ios=="0"){
-          MyPlayerMy.playSong('ios'+(Data.mCurrentIndex+1).toString()+".mp3");
-        }else{
-          MyPlayerMy.playSong((Data.mCurrentIndex+300).toString()+".mp3");
+        if (Data.ios == "0") {
+          MyPlayerMy.playSong(
+              'ios' + (Data.mCurrentIndex + 1).toString() + ".mp3");
+        } else {
+          MyPlayerMy.playSong((Data.mCurrentIndex + 300).toString() + ".mp3");
         }
 
         Future.delayed(const Duration(seconds: 10), () {

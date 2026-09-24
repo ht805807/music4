@@ -13,7 +13,7 @@ class Data {
   static int PASS_AWARD_COINS = 5;
   static String mName = "";
   static int test = 0;
-  static String ios ="0";
+  static String ios = "0";
   static bool isVisible = false;
   static const String packageName = 'com.janther0927M5'; // 替换为您应用程序的包名
   static const String androidUrl =
@@ -41,18 +41,17 @@ class Data {
   static GetSong initCurrentSong() {
     // 获取当前关卡的歌曲名字和文件名字
     var song = GetSong();
-    if(Data.ios=="0"){
+    if (Data.ios == "0") {
       List<String> temp = Music.songInfoios[mCurrentIndex];
       song.setSongFileName(temp[INDEX_FILE_NAME]);
       song.setSongName(temp[INDEX_SONG_NAME]);
       return song;
-    }else{
+    } else {
       List<String> temp = Music.songInfo[mCurrentIndex];
       song.setSongFileName(temp[INDEX_FILE_NAME]);
       song.setSongName(temp[INDEX_SONG_NAME]);
       return song;
     }
-
   }
 
   static String getRandomWord() {

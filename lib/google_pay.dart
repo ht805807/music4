@@ -116,7 +116,7 @@ class _GooglePayPageState extends State<GooglePayPage> {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => const HomePage()),
-                    (route) => false,
+                (route) => false,
               );
             },
           ),
@@ -170,7 +170,7 @@ class _GooglePayPageState extends State<GooglePayPage> {
                           setState(() => _purchasePending = true);
                           _showLoadingDialog();
                           final purchaseParam =
-                          PurchaseParam(productDetails: productDetails);
+                              PurchaseParam(productDetails: productDetails);
                           await _iap.buyConsumable(
                             purchaseParam: purchaseParam,
                           );

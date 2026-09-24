@@ -100,8 +100,8 @@ class _PassEventDialog extends State<PassEventDialog>
             GestureDetector(
               onTap: () {
                 Navigator.pop(context);
-                  Data.mCurrentIndex+=1;
-                  Data.TOTAL_COINS += 5;
+                Data.mCurrentIndex += 1;
+                Data.TOTAL_COINS += 5;
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(

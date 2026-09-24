@@ -1,0 +1,8 @@
+Options -Indexes
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(config|helpers|sql)/ - [F,L]
+</IfModule>
+<FilesMatch "\.(sql|env|ini|log)$">
+  Require all denied
+</FilesMatch>

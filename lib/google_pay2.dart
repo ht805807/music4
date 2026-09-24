@@ -17,7 +17,6 @@ class _MyHomePageState extends State<ApplePay> {
   bool _isAvailable = false;
   bool _purchasePending = false;
 
-
   @override
   void initState() {
     super.initState();
@@ -36,12 +35,11 @@ class _MyHomePageState extends State<ApplePay> {
       return;
     }
 
-    const Set<String> _kIds = <String>{'ios01','ios02','ios03','ios04'};
-    final ProductDetailsResponse response = await _inAppPurchase.queryProductDetails(_kIds);
+    const Set<String> _kIds = <String>{'ios01', 'ios02', 'ios03', 'ios04'};
+    final ProductDetailsResponse response =
+        await _inAppPurchase.queryProductDetails(_kIds);
     if (response.error != null) {
-      setState(() {
-
-      });
+      setState(() {});
       return;
     }
 
@@ -112,17 +110,17 @@ class _MyHomePageState extends State<ApplePay> {
       switch (purchaseDetails.productID) {
         case 'ios01':
           setState(() {
-              _showAlert(context, "獲得300金幣");
-              Data.TOTAL_COINS += 300;
-              SharedPreferencesHelper.SetGame();
+            _showAlert(context, "獲得300金幣");
+            Data.TOTAL_COINS += 300;
+            SharedPreferencesHelper.SetGame();
           });
           break;
         case 'ios02':
-            setState(() {
-              _showAlert(context, "獲得1200金幣");
-              Data.TOTAL_COINS += 1200;
-              SharedPreferencesHelper.SetGame();
-            });
+          setState(() {
+            _showAlert(context, "獲得1200金幣");
+            Data.TOTAL_COINS += 1200;
+            SharedPreferencesHelper.SetGame();
+          });
           break;
         case 'ios03':
           setState(() {
@@ -178,7 +176,7 @@ class _MyHomePageState extends State<ApplePay> {
               Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const HomePage()),
-                      (route) => route == null);
+                  (route) => route == null);
             },
           ),
         ),
@@ -196,7 +194,8 @@ class _MyHomePageState extends State<ApplePay> {
                   margin: const EdgeInsets.all(8.0), // 设置外边距
                   decoration: BoxDecoration(
                     image: const DecorationImage(
-                      image: AssetImage('assets/image/allpass_back0.png'), // 设置背景图像
+                      image: AssetImage(
+                          'assets/image/allpass_back0.png'), // 设置背景图像
                       fit: BoxFit.cover,
                     ),
                     borderRadius: BorderRadius.circular(10.0), // 圆角边框
@@ -217,14 +216,16 @@ class _MyHomePageState extends State<ApplePay> {
                     trailing: Container(
                       decoration: BoxDecoration(
                         image: const DecorationImage(
-                          image: AssetImage('assets/image/game_coin_sel.png'), // 设置按钮的背景图像
+                          image: AssetImage(
+                              'assets/image/game_coin_sel.png'), // 设置按钮的背景图像
                           fit: BoxFit.cover,
                         ),
                         borderRadius: BorderRadius.circular(8.0), // 圆角边框
                       ),
                       child: TextButton(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 设置按钮内边距
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0), // 设置按钮内边距
                         ),
                         child: Text(
                           productDetails.price,
@@ -234,7 +235,7 @@ class _MyHomePageState extends State<ApplePay> {
                         ),
                         onPressed: () {
                           PurchaseParam purchaseParam =
-                          PurchaseParam(productDetails: productDetails);
+                              PurchaseParam(productDetails: productDetails);
                           _inAppPurchase.buyConsumable(
                               purchaseParam: purchaseParam); // 購買消耗性商品
                         },
@@ -252,8 +253,8 @@ class _MyHomePageState extends State<ApplePay> {
         ),
       );
     }
-
   }
+
   void _showAlert(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -272,5 +273,4 @@ class _MyHomePageState extends State<ApplePay> {
       },
     );
   }
-
 }

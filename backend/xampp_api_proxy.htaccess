@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Expose the versioned API at /api while keeping application code in
+# htdocs/music4-api. Requires Apache mod_rewrite and AllowOverride FileInfo.
+RewriteRule ^leaderboard/(.*)$ /music4-api/api/v1/leaderboard/$1 [L]
+RewriteRule ^scores/(.*)$ /music4-api/api/v1/scores/$1 [L]
+RewriteRule ^games/(.*)$ /music4-api/api/v1/games/$1 [L]
